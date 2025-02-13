@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js';
+import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 
 let scene, camera, renderer, controller;
-let reticle, ape;
+let reticle, apeModel, mixer;
 
 init();
 
@@ -33,33 +33,41 @@ function init() {
     reticle.visible = false;
     scene.add(reticle);
 
-    // Cargar modelo del mono
+    // Cargar modelo del ape
     const loader = new GLTFLoader();
-    loader.load('./public/assets/ape.glb', (gltf) => {
-        ape = gltf.scene;
-        ape.animations=gltf.animations;
-
-        mixer = new THREE.AnimationMixer( ape ); 
-                const clips = ape.animations;
-                var idle= mixer.clipAction(ape.animations[0]).play();   
+    loader.load('/assets/ape.glb', (gltf) => {
+        apeModel = gltf.scene;
+        apeModel.scale.set(0.5, 0.5, 0.5);
         
-                renderer.setAnimationLoop( animate );
-        //monkeyModel.scale.set(0.5, 0.5, 0.5);
+        // Configurar animación
+        if (gltf.animations.length > 0) {
+            mixer = new THREE.AnimationMixer(apeModel);
+            const action = mixer.clipAction(gltf.animations[0]);
+            action.play();
+        }
     });
 
     // Configurar WebXR
-    document.body.appendChild(THREE.XRButton.createButton(renderer));
+    document.body.appendChild(XRButton.createButton(renderer));
     renderer.setAnimationLoop(render);
 }
 
 function onSelect() {
-    if (reticle.visible && ape) {
-        const newMonkey = ape.clone();
-        newMonkey.position.set(reticle.position.x, reticle.position.y, reticle.position.z);
-        scene.add(newMonkey);
+    if (reticle.visible && apeModel) {
+        const newApe = apeModel.clone();
+        newApe.position.set(reticle.position.x, reticle.position.y, reticle.position.z);
+        scene.add(newApe);
+
+        // Reproducir animación en el nuevo modelo
+        if (mixer) {
+            const newMixer = new THREE.AnimationMixer(newApe);
+            const action = newMixer.clipAction(mixer._actions[0]._clip);
+            action.play();
+        }
     }
 }
 
 function render() {
+    if (mixer) mixer.update(0.016); // Actualizar animación
     renderer.render(scene, camera);
 }
