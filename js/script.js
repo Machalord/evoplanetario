@@ -32,20 +32,28 @@ function init() {
     reticle = new THREE.Mesh(geometry, material);
     reticle.visible = false;
     scene.add(reticle);
+    const loader=new GLTFLoader();
 
-    // Cargar modelo del ape
-    const loader = new GLTFLoader();
-    loader.load('/assets/ape.glb', (gltf) => {
-        apeModel = gltf.scene;
-        apeModel.scale.set(0.5, 0.5, 0.5);
-        
-        // Configurar animación
-        if (gltf.animations.length > 0) {
-            mixer = new THREE.AnimationMixer(apeModel);
-            const action = mixer.clipAction(gltf.animations[0]);
-            action.play();
+    /* // Cargar modelo del ape
+    loader.load('/assets/ape.glb',(gltf) => {
+            apeModel = gltf.scene;
+            apeModel.scale.set(0.5, 0.5, 0.5);
+    
+            // Configurar animación
+            if (gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(apeModel);
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
+    
+            console.log("Modelo cargado correctamente:", apeModel);
+        },
+        undefined,
+        (error) => {
+            console.error("Error cargando el modelo:", error);
         }
-    });
+    ); */
+    
 
     // Configurar WebXR
     document.body.appendChild(XRButton.createButton(renderer));
