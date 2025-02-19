@@ -4,6 +4,7 @@ import { XRButton } from 'three/examples/jsm/webxr/XRButton.js';
 
 let scene, camera, renderer, controller;
 let reticle, apeModel, mixer;
+let textMesh;
 
 init();
 
@@ -49,6 +50,24 @@ function init() {
 
         scene.add(apeModel);
 
+        // Crear un texto para mostrar si se cargó el modelo
+        const loaderText = document.createElement('div');
+        loaderText.textContent = 'Modelo cargado correctamente!';
+        loaderText.style.position = 'absolute';
+        loaderText.style.top = '10px';
+        loaderText.style.left = '50%';
+        loaderText.style.transform = 'translateX(-50%)';
+        loaderText.style.color = '#fff';
+        loaderText.style.fontSize = '24px';
+
+        document.body.appendChild(loaderText);
+
+        // Crear un cubo simple
+        const geometryCube = new THREE.BoxGeometry(1, 1, 1);
+        const materialCube = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const cubeMesh = new THREE.Mesh(geometryCube, materialCube);
+        scene.add(cubeMesh);
+
         // Configurar animación
         if (gltf.animations.length > 0) {
             mixer = new THREE.AnimationMixer(apeModel);
@@ -58,8 +77,11 @@ function init() {
 
         console.log("Modelo cargado correctamente:", apeModel);
 
-        // Mostrar retículo cuando se detecta una superficie
-        reticle.visible = true;
+        // Ocultar el texto después de unos segundos
+        setTimeout(() => {
+            loaderText.remove();
+        }, 2000); // Oculta el texto después de 2 segundos
+
     }, undefined, (error) => {
         console.error("Error cargando el modelo:", error);
     });
@@ -86,9 +108,17 @@ function init() {
             }
         }
     }
-}
 
-function render() {
-    if (mixer) mixer.update(1 / 60); // Actualizar animación
-    renderer.render(scene, camera);
+    function render() {
+        if (mixer) mixer.update(1 / 60); // Actualizar animación
+        renderer.render(scene, camera);
+
+        // Verificar si el modelo ha sido cargado y reproducir la animación
+        if (apeModel && mixer) {
+            const text = document.querySelector('div');
+            if (!text || !text.textContent.includes("Modelo cargado correctamente!")) {
+                console.log('Se está reproduciendo la animación del modelo');
+            }
+        }
+    }
 }
