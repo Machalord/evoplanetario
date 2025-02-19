@@ -34,7 +34,7 @@ function init() {
     scene.add(reticle);
     const loader=new GLTFLoader();
 
-    /* // Cargar modelo del ape
+     // Cargar modelo del ape
     loader.load('/assets/ape.glb',(gltf) => {
             apeModel = gltf.scene;
             apeModel.scale.set(0.5, 0.5, 0.5);
@@ -52,7 +52,7 @@ function init() {
         (error) => {
             console.error("Error cargando el modelo:", error);
         }
-    ); */
+    ); 
     
 
     // Configurar WebXR
