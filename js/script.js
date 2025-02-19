@@ -12,7 +12,6 @@ function init() {
     // Inicializar el renderizador y la escena
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.xr.enabled = true;
     document.body.appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
@@ -25,8 +24,8 @@ function init() {
 
     // Controlador para detección de input
     controller = renderer.xr.getController(0);
-    controller.addEventListener('select', onSelect);
-    scene.add(controller);
+    document.body.appendChild(XRButton.createButton(renderer));
+    renderer.setAnimationLoop(render);
 
     // Cargar retícula para detección de superficie
     const geometry = new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2);
@@ -86,39 +85,64 @@ function init() {
         console.error("Error cargando el modelo:", error);
     });
 
-    // Configurar WebXR
-    document.body.appendChild(XRButton.createButton(renderer));
-    renderer.setAnimationLoop(render);
+    // Configurar WebXR para mostrar la cámara real en la escena
+    renderer.xr.enabled = true;
 
-    // Función para manejar la interacción de selección
-    function onSelect(event) {
-        if (event.interactionSource === 'hand') {
-            console.log('Se ha seleccionado el modelo');
-            if (reticle.visible && apeModel) {
-                const newApe = apeModel.clone();
-                newApe.position.set(reticle.position.x, reticle.position.y, reticle.position.z);
-                scene.add(newApe);
-
-                // Reproducir animación en el nuevo modelo
-                if (mixer) {
-                    const newMixer = new THREE.AnimationMixer(newApe);
-                    const action = newMixer.clipAction(mixer._actions[0]._clip);
-                    action.play();
-                }
-            }
+    const xrSessionPromise = new Promise((resolve, reject) => {
+        function onSessionStarted(session) {
+            resolve(session);
         }
-    }
 
-    function render() {
-        if (mixer) mixer.update(1 / 60); // Actualizar animación
-        renderer.render(scene, camera);
-
-        // Verificar si el modelo ha sido cargado y reproducir la animación
-        if (apeModel && mixer) {
-            const text = document.querySelector('div');
-            if (!text || !text.textContent.includes("Modelo cargado correctamente!")) {
-                console.log('Se está reproduciendo la animación del modelo');
-            }
+        function onSessionEnded() {
+            reject();
         }
+
+        if (navigator.xr) {
+            navigator.xr.requestSession('immersive-vr', { eye: 'none' })
+                .then(onSessionStarted)
+                .catch(onSessionEnded);
+        } else {
+            reject(new Error("WebXR no está disponible en este navegador."));
+        }
+    });
+
+    xrSessionPromise.then((session) => {
+        console.log("Se ha iniciado la sesión de WebXR");
+
+        // Configurar la cámara real del dispositivo
+        const xrcameraStream = new THREE.XRCameraStream();
+        scene.add(xrcameraStream);
+
+        // Asegurarse de que la cámara real esté visible en la escena
+        const cameraHelper = new THREE.CameraHelper(xrcameraStream.getCamera());
+        scene.add(cameraHelper);
+
+        // Actualizar la escena cada frame
+        function render() {
+            if (session) {
+                session.update();
+            }
+            requestAnimationFrame(render);
+            renderer.render(scene, xrcameraStream.getCamera());
+        }
+
+        render();
+
+    }).catch((error) => {
+        console.error("Error iniciando WebXR:", error);
+    });
+}
+
+function onSelect(event) {
+    if (event.interactionSource === 'hand') {
+        console.log('Se ha seleccionado el modelo');
+        // Aquí puedes agregar la lógica para interactuar con el modelo
     }
+}
+
+// Asegurarse de que la función render se ejecute continuamente
+function render() {
+    if (mixer) mixer.update(1 / 60); // Actualizar animación
+    requestAnimationFrame(render);
+    renderer.render(scene, camera);
 }
