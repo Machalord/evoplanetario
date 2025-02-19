@@ -35,7 +35,7 @@ function init() {
     const loader=new GLTFLoader();
 
      // Cargar modelo del ape
-    loader.load('/assets/ape.glb',(gltf) => {
+    loader.load('./public/assets/ape.glb',(gltf) => {
             apeModel = gltf.scene;
             apeModel.scale.set(0.5, 0.5, 0.5);
     
