@@ -26,17 +26,12 @@ function init()
 
     /* './public/assets/ape.glb' */
      /*'./public/assets/Australophitecus3_anim.glb'*/
-    gltfloader.load('./public/assets/Australophitecus3_anim.glb',function (gltf){
+    gltfloader.load('./public/assets/ape.glb',function (gltf){
         
-
         const ape=gltf.scene;
         ape.animations=gltf.animations;
 
         ape.traverse((child)=>{
-            if(child.isMesh)
-            {
-                //child.geometry.center();
-            }
 
         }, undefined, function ( error ) {
 
@@ -61,10 +56,7 @@ function init()
 
     
     });
-
-
-
-
+ 
 
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444);
     scene.add(hemiLight); 
