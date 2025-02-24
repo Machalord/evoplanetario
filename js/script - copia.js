@@ -67,7 +67,7 @@ function animate() {
     
   requestAnimationFrame(animate); 
   let mixerUpdateDelta = clock.getDelta();
-  mixer.update( mixerUpdateDelta);
+  mixer.update( mixerUpdateDelta); 
   renderer.render(scene, camera);
   ctrls.update();
 } 

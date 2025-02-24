@@ -3,123 +3,71 @@ import { ARButton } from 'three/examples/jsm/webxr/ARButton'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 
-
 let loadedModels = [];
 let hitTestSource = null;
 let hitTestSourceRequested = false;
-let mixer,clock;
+
+let gltfLoader = new GLTFLoader();
+gltfLoader.load('/assets/ape.glb', onLoad); 
+
+function onLoad(gtlf) {
+    loadedModels.push(gtlf.scene)
+}
+
+const scene = new THREE.Scene()
 
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
- 
-const scene = new THREE.Scene()
+
+const light = new THREE.AmbientLight(0xffffff, 1.0)
+scene.add(light)
+
+
+let reticle = new THREE.Mesh(
+    new THREE.RingGeometry(0.15, .2, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: 0xffffff * Math.random() })
+)
+reticle.visible = false;
+reticle.matrixAutoUpdate = false;
+scene.add(reticle)
+
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
+camera.position.set(0, 2, 5);
+camera.lookAt(new THREE.Vector3(0, 0, 0))
+scene.add(camera);
+
 const renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: true
 
 });
 
-let reticle = new THREE.Mesh(
-    new THREE.RingGeometry(0.15, .2, 32).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0xffffff * Math.random() })
-)
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.xr.enabled = true
 
-function onLoad(gtlf) {
-    loadedModels.push(gtlf.scene)
-}
-
-init()
-
-function init(){
-            let gltfloader = new GLTFLoader(); 
-        clock = new THREE.Clock();
+document.body.appendChild(renderer.domElement);
+document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
 
 
-        gltfloader.load('./public/assets/ape.glb',function (gltf){
-                
-                const ape=gltf.scene;
-                ape.animations=gltf.animations;
-
-                ape.traverse((child)=>{
-
-                }, undefined, function ( error ) {
-
-                    console.error( error );
-
-                });
-
-
-                mixer = new THREE.AnimationMixer( ape ); 
-                const clips = ape.animations;
-
-                var idle= mixer.clipAction(ape.animations[0]).play();   
-                /* const clips = ape.animations;
-
-                clips.forEach( function ( clip ) {
-                    mixer.clipAction( clip ).play();
-                } );    */
- 
-                
-                loadedModels.push(ape);
-            });
-
-        
-
-        
-
-        const light = new THREE.AmbientLight(0xffffff, 1.0)
-        scene.add(light)
-
-
-        
-        reticle.visible = false;
-        reticle.matrixAutoUpdate = false;
-        scene.add(reticle)
-
-        
-        camera.position.set(0, 2, 5);
-        camera.lookAt(new THREE.Vector3(0, 0, 0))
-        scene.add(camera);
-
-       
-
-        renderer.setSize(sizes.width, sizes.height);
-        renderer.setPixelRatio(window.devicePixelRatio);
-        renderer.xr.enabled = true
-
-        document.body.appendChild(renderer.domElement);
-        document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
-
-
-        let controller = renderer.xr.getController(0);
-        controller.addEventListener('select', onSelect);
-        scene.add(controller)
-        
-}
+let controller = renderer.xr.getController(0);
+controller.addEventListener('select', onSelect);
+scene.add(controller)
 
 function onSelect() {
-    if (!reticle.visible) {
+    if (reticle.visible) {
         let randomIndex = Math.floor((Math.random() * loadedModels.length))
         let model = loadedModels[randomIndex].clone()
         model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(0.01, 0.01, 0.01)
+        model.scale.set(.1, .1, .1)
         model.name = "model"
         scene.add(model)
     }
 }
 
-function animate() {
-    
-    requestAnimationFrame(animate); 
-    let mixerUpdateDelta = clock.getDelta();
-    mixer.update( mixerUpdateDelta);
-    renderer.render(scene, camera); 
-  } 
-
-renderer.setAnimationLoop(animate)
+renderer.setAnimationLoop(render)
 
 function render(timestamp, frame) {
     if (frame) {
@@ -159,11 +107,7 @@ function render(timestamp, frame) {
             object.rotation.y += 0.01
         }
     })
-
-    requestAnimationFrame(render); 
-    let mixerUpdateDelta = clock.getDelta();
-    mixer.update( mixerUpdateDelta);
-    renderer.render(scene, camera); 
+    renderer.render(scene, camera)
 }
 
 window.addEventListener('resize', () => {
@@ -174,6 +118,6 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
 
     renderer.setSize(sizes.width, sizes.height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(window.devicePixelRatio)
 
 })
