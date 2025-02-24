@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { ARButton } from 'three/examples/jsm/webxr/ARButton'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { ARButton } from 'three/examples/jsm/webxr/ARButton';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 
 let loadedModels = [];
@@ -11,18 +11,18 @@ let gltfLoader = new GLTFLoader();
 gltfLoader.load('/assets/ape.glb', onLoad); 
 
 function onLoad(gtlf) {
-    loadedModels.push(gtlf.scene)
+    loadedModels.push(gtlf.scene);
 }
 
-const scene = new THREE.Scene()
+const scene = new THREE.Scene();
 
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
 
-const light = new THREE.AmbientLight(0xffffff, 1.0)
-scene.add(light)
+const light = new THREE.AmbientLight(0xffffff, 1.0);
+scene.add(light);
 
 
 let reticle = new THREE.Mesh(
@@ -31,7 +31,7 @@ let reticle = new THREE.Mesh(
 )
 reticle.visible = false;
 reticle.matrixAutoUpdate = false;
-scene.add(reticle)
+scene.add(reticle);
 
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
 camera.position.set(0, 2, 5);
@@ -54,7 +54,7 @@ document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['
 
 let controller = renderer.xr.getController(0);
 controller.addEventListener('select', onSelect);
-scene.add(controller)
+scene.add(controller);
 
 function onSelect() {
     if (reticle.visible) {
@@ -63,7 +63,7 @@ function onSelect() {
         model.position.setFromMatrixPosition(reticle.matrix);
         model.scale.set(.1, .1, .1)
         model.name = "model"
-        scene.add(model)
+        scene.add(model);
     }
 }
 
@@ -96,7 +96,7 @@ function render(timestamp, frame) {
                 reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix)
 
             } else {
-                reticle.visible = false
+                reticle.visible = false;
 
             }
         }
