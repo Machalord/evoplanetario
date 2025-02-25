@@ -8,7 +8,7 @@ let hitTestSource = null;
 let hitTestSourceRequested = false;
 
 let gltfLoader = new GLTFLoader();
-gltfLoader.load('/assets/tute_ape.glb', onLoad); 
+gltfLoader.load('./assets/tute_ape.glb', onLoad); 
 
 function onLoad(gtlf) {
     loadedModels.push(gtlf.scene);
