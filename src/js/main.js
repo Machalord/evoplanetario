@@ -10,8 +10,33 @@ let hitTestSourceRequested = false;
 let gltfLoader = new GLTFLoader();
 gltfLoader.load('./assets/tute_ape.glb', onLoad); 
 
+  
+
 function onLoad(gtlf) {
     loadedModels.push(gtlf.scene);
+
+    const ape=gltf.scene;
+        ape.animations=gltf.animations;
+
+        ape.traverse((child)=>{
+
+        }, undefined, function ( error ) {
+
+            console.error( error );
+
+        });
+
+
+        mixer = new THREE.AnimationMixer( ape ); 
+        const clips = ape.animations;
+
+        var idle= mixer.clipAction(ape.animations[0]).play();   
+        /* const clips = ape.animations;
+
+        clips.forEach( function ( clip ) {
+            mixer.clipAction( clip ).play();
+        } );    */
+ 
 }
 
 const scene = new THREE.Scene();
