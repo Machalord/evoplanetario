@@ -60,16 +60,20 @@ function onSelect() {
         let randomIndex = Math.floor(Math.random() * loadedModels.length);
         let model = loadedModels[randomIndex].clone();
         model.position.setFromMatrixPosition(reticle.matrix);
-        //model.scale.set(0.1, 0.1, 0.1);
+        model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
         scene.add(model);
 
-        if (mixer) {
+        // Solo agregar animaciones si existen
+        if (gltfLoader.animations && gltfLoader.animations.length > 0) {
             let newMixer = new THREE.AnimationMixer(model);
-            let action = newMixer.clipAction(model.animations[0]);
+            let action = newMixer.clipAction(gltfLoader.animations[0]);
             action.play();
+        } else {
+            console.warn("⚠️ No hay animaciones disponibles para el modelo instanciado.");
         }
     }
 }
+
 
 renderer.setAnimationLoop((timestamp, frame) => {
     if (frame) {
