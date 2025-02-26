@@ -6,6 +6,7 @@ let loadedModels = [];
 let hitTestSource = null;
 let hitTestSourceRequested = false;
 let mixer;
+let mixers = [];
 const clock = new THREE.Clock();
 
 const gltfLoader = new GLTFLoader();
