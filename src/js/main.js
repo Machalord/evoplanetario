@@ -21,7 +21,7 @@ gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
         const idleAction = mixer.clipAction(gltf.animations[0]);
         idleAction.play();
         
-        console.log("Animaciones disponibles:", loadedModels[randomIndex].animations);
+        //console.log("Animaciones disponibles:", loadedModels[randomIndex].animations);
 
     }
 });
@@ -88,26 +88,23 @@ scene.add(controller);
             let model = originalModel.clone();
     
             model.position.setFromMatrixPosition(reticle.matrix);
-            model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
+            //model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
+
+            model.animations=loadedModels[modelIndex].animations;
             scene.add(model);
     
             // Verificar si el modelo tiene animaciones
-            if (originalModel.animations && originalModel.animations.length > 0) {
-                let newMixer = new THREE.AnimationMixer(model);
+               let newMixer = new THREE.AnimationMixer(model);
     
                 // 🔹 Tomamos la primera animación válida y la reproducimos
-                let firstAnimation = originalModel.animations[0];
+                let firstAnimation = model.animations[0];
                 let action = newMixer.clipAction(firstAnimation);
                 action.play();
     
-                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
-            } else {
-                console.warn("⚠️ El modelo cargado no tiene animaciones.");
-            }
+                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop 
         }
     }
-
-
+    
 
 
 renderer.setAnimationLoop((timestamp, frame) => {
