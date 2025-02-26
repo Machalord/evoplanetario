@@ -11,7 +11,7 @@ const clock = new THREE.Clock();
 const gltfLoader = new GLTFLoader();
 gltfLoader.load('./assets/cube.glb', (gltf) => {
     const ape = gltf.scene;
-    ape.scale.set(0.1, 0.1, 0.1); // Escalamos el modelo desde la carga
+    //ape.scale.set(0.1, 0.1, 0.1); // Escalamos el modelo desde la carga
     loadedModels.push(ape);
 
     // Inicializar mezclador de animaciones
