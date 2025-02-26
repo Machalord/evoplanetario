@@ -97,7 +97,7 @@ scene.add(controller);
                let newMixer = new THREE.AnimationMixer(model);
     
                 // 🔹 Tomamos la primera animación válida y la reproducimos
-                let firstAnimation = model.animations[0];
+                let firstAnimation = originalModel.animations[0];
                 let action = newMixer.clipAction(firstAnimation);
                 action.play();
     
