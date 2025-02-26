@@ -20,6 +20,12 @@ gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
         mixer = new THREE.AnimationMixer(ape);
         const idleAction = mixer.clipAction(gltf.animations[0]);
         idleAction.play();
+
+        const clips = gltf.animations;
+
+        clips.forEach( function ( clip ) {
+            mixer.clipAction( clip ).play();
+        } );
     }
 });
 
@@ -56,7 +62,7 @@ let controller = renderer.xr.getController(0);
 controller.addEventListener('select', onSelect);
 scene.add(controller);
 
-function onSelect() {
+/* function onSelect() {
     if (reticle.visible && loadedModels.length > 0) {
         let randomIndex = Math.floor(Math.random() * loadedModels.length);
         let model = loadedModels[randomIndex].clone();
@@ -76,7 +82,35 @@ function onSelect() {
             console.warn("⚠️ No hay animaciones disponibles para el modelo instanciado.");
         }
     }
+} */
+
+function onSelect() {
+    if (reticle.visible && loadedModels.length > 0) {
+        let randomIndex = Math.floor(Math.random() * loadedModels.length);
+        let model = loadedModels[randomIndex].clone();
+        model.position.setFromMatrixPosition(reticle.matrix);
+        model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
+        scene.add(model);
+
+        // Verificar si el modelo tiene animaciones
+        if (loadedModels[randomIndex].animations && loadedModels[randomIndex].animations.length > 0) {
+            let newMixer = new THREE.AnimationMixer(model);
+            
+            // 🔹 Iteramos sobre todas las animaciones y reproducimos la primera
+            let firstAnimation = loadedModels[randomIndex].animations.find(anim => anim);
+            if (firstAnimation) {
+                let action = newMixer.clipAction(firstAnimation);
+                action.play();
+                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
+            } else {
+                console.warn("⚠️ No se encontró ninguna animación válida en el modelo.");
+            }
+        } else {
+            console.warn("⚠️ El modelo cargado no tiene animaciones.");
+        }
+    }
 }
+
 
 
 
