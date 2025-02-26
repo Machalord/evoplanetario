@@ -81,27 +81,31 @@ scene.add(controller);
     }
 } */
 
-function onSelect() {
-    if (reticle.visible && loadedModels.length > 0) {
-        let randomIndex = Math.floor(Math.random() * loadedModels.length);
-        let model = loadedModels[randomIndex].clone();
-        model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
-        scene.add(model);
-
-        // Asegurarnos de que el modelo tiene animaciones
-        if (loadedModels[randomIndex].animations && loadedModels[randomIndex].animations.length > 0) {
-            let newMixer = new THREE.AnimationMixer(model);
-            let action = mixer.clipAction(model.animations[0]);
-            action.play();
-            
-            // 🔹 Agregamos el mixer a la lista para actualizarlo en el loop
-            mixers.push(newMixer);
-        } else {
-            console.warn("⚠️ No hay animaciones disponibles para el modelo instanciado.");
+    function onSelect() {
+        if (reticle.visible && loadedModels.length > 0) {
+            let modelIndex = Math.floor(Math.random() * loadedModels.length);
+            let originalModel = loadedModels[modelIndex]; 
+            let model = originalModel.clone();
+    
+            model.position.setFromMatrixPosition(reticle.matrix);
+            model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
+            scene.add(model);
+    
+            // Verificar si el modelo tiene animaciones
+            if (originalModel.animations && originalModel.animations.length > 0) {
+                let newMixer = new THREE.AnimationMixer(model);
+    
+                // 🔹 Tomamos la primera animación válida y la reproducimos
+                let firstAnimation = originalModel.animations[0];
+                let action = newMixer.clipAction(firstAnimation);
+                action.play();
+    
+                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
+            } else {
+                console.warn("⚠️ El modelo cargado no tiene animaciones.");
+            }
         }
     }
-}
 
 
 
