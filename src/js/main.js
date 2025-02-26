@@ -64,13 +64,13 @@ function onSelect() {
         model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
         scene.add(model);
 
-        // Asegurarnos de que el modelo clonado tiene animaciones
+        // Asegurarnos de que el modelo tiene animaciones
         if (loadedModels[randomIndex].animations && loadedModels[randomIndex].animations.length > 0) {
             let newMixer = new THREE.AnimationMixer(model);
             let action = newMixer.clipAction(loadedModels[randomIndex].animations[0]); 
             action.play();
             
-            // Agregamos el mixer a una lista para actualizarlo en el loop
+            // 🔹 Agregamos el mixer a la lista para actualizarlo en el loop
             mixers.push(newMixer);
         } else {
             console.warn("⚠️ No hay animaciones disponibles para el modelo instanciado.");
@@ -118,7 +118,6 @@ renderer.setAnimationLoop((timestamp, frame) => {
 
     renderer.render(scene, camera);
 });
-
 
 // Ajustar tamaño en caso de redimensionar la ventana
 window.addEventListener('resize', () => {
