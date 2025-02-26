@@ -5,28 +5,29 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 let loadedModels = [];
 let hitTestSource = null;
 let hitTestSourceRequested = false;
-const mixers = []; // Use const instead of let for mixers
-
+let mixer;
+const mixers = [];
 const clock = new THREE.Clock();
 
 const gltfLoader = new GLTFLoader();
 gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
     const ape = gltf.scene;
-
-    // Escalamos el modelo desde la carga
-    ape.scale.set(0.1, 0.1, 0.1);
-
+    //ape.scale.set(0.1, 0.1, 0.1); // Escalamos el modelo desde la carga
     loadedModels.push(ape);
 
     // Inicializar mezclador de animaciones
     if (gltf.animations.length > 0) {
-        const mixer = new THREE.AnimationMixer(ape);
+        mixer = new THREE.AnimationMixer(ape);
         const idleAction = mixer.clipAction(gltf.animations[0]);
         idleAction.play();
 
+
+        mixers.push(mixer);
+        
         console.log("Animaciones disponibles:", gltf.animations.length);
 
-        mixers.push(mixer); // Guardamos el mixer para actualizarlo en el loop
+        scene.add(ape)
+
     }
 });
 
@@ -47,7 +48,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.xr.enabled = true;
 
 document.body.appendChild(renderer.domElement);
-document.body.appendChild(ARButton.createButton(renderer));
+document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
 
 // Retícula
 let reticle = new THREE.Mesh(
@@ -56,42 +57,63 @@ let reticle = new THREE.Mesh(
 );
 reticle.visible = false;
 reticle.matrixAutoUpdate = false;
+scene.add(reticle);
 
 // Controlador XR
-const controller = renderer.xr.getController(0);
-
+let controller = renderer.xr.getController(0);
 controller.addEventListener('select', onSelect);
 scene.add(controller);
 
-function onSelect(event) {
+/* function onSelect() {
     if (reticle.visible && loadedModels.length > 0) {
-        const modelIndex = 0; // Assuming you want to use the first loaded model
-        let originalModel = loadedModels[modelIndex];
-        
-        const model = originalModel.clone();
+        let randomIndex = Math.floor(Math.random() * loadedModels.length);
+        let model = loadedModels[randomIndex].clone();
         model.position.setFromMatrixPosition(reticle.matrix);
-
+        model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
         scene.add(model);
-        console.log("modelo clonado:", model);
 
-        // Asegurarnos de que el modelo clonado también tenga las animaciones
-        if (loadedModels[0].animations && loadedModels[0].animations.length > 0) {
-            const newMixer = new THREE.AnimationMixer(model);
-            const firstAnimation = loadedModels[0].animations[0]; // Tomamos la primera animación disponible
-            const action = newMixer.clipAction(firstAnimation); 
+        // Asegurarnos de que el modelo tiene animaciones
+        if (loadedModels[randomIndex].animations && loadedModels[randomIndex].animations.length > 0) {
+            let newMixer = new THREE.AnimationMixer(model);
+            let action = newMixer.clipAction(loadedModels[randomIndex].animations[0]); 
             action.play();
-
-            mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
+            
+            // 🔹 Agregamos el mixer a la lista para actualizarlo en el loop
+            mixers.push(newMixer);
         } else {
-            console.warn("⚠️ No hay animaciones disponibles para el modelo clonado.");
+            console.warn("⚠️ No hay animaciones disponibles para el modelo instanciado.");
         }
     }
-}
+} */
 
-function onSessionEnded() {
-    hitTestSourceRequested = false;
-    hitTestSource = null;
-}
+    function onSelect(event) {
+        if (reticle.visible && loadedModels.length > 0) {
+            const modelIndex = 0; // Assuming you want to use the first loaded model
+            let originalModel = loadedModels[modelIndex];
+            
+            const model = originalModel.clone();
+            model.position.setFromMatrixPosition(reticle.matrix);
+    
+            scene.add(model);
+            model.animations=loadedModels[modelIndex].animations;
+            console.log("modelo clonado:", model);
+    
+            // Asegurarnos de que el modelo clonado también tenga las animaciones
+            if (loadedModels[0].animations && loadedModels[0].animations.length > 0) {
+                const newMixer = new THREE.AnimationMixer(model);
+                const firstAnimation = loadedModels[0].animations[0]; // Tomamos la primera animación disponible
+                const action = newMixer.clipAction(firstAnimation); 
+                action.play();
+    
+                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
+            } else {
+                console.warn("⚠️ No hay animaciones disponibles para el modelo clonado.");
+            }
+        }
+    }
+    
+    
+
 
 renderer.setAnimationLoop((timestamp, frame) => {
     if (frame) {
@@ -102,9 +124,6 @@ renderer.setAnimationLoop((timestamp, frame) => {
             session.requestReferenceSpace('viewer').then(refSpace => {
                 session.requestHitTestSource({ space: refSpace }).then(source => {
                     hitTestSource = source;
-                    console.log("hit test source:", hitTestSource);
-
-                    session.addEventListener("end", onSessionEnded);
                 });
             });
 
@@ -127,20 +146,20 @@ renderer.setAnimationLoop((timestamp, frame) => {
             }
         }
 
-        // Ahora actualizamos TODOS los mixers de los modelos en escena
-        const delta = clock.getDelta();
+        // 🔹 Ahora actualizamos TODOS los mixers de los modelos en escena
+        let delta = clock.getDelta();
         mixers.forEach(mixer => mixer.update(delta));
     }
 
     renderer.render(scene, camera);
+});
 
-    // Ajustar tamaño en caso de redimensionar la ventana
-    window.addEventListener('resize', () => {
-        sizes.width = window.innerWidth;
-        sizes.height = window.innerHeight;
-        camera.aspect = sizes.width / sizes.height;
-        camera.updateProjectionMatrix();
-        renderer.setSize(sizes.width, sizes.height);
-        renderer.setPixelRatio(window.devicePixelRatio);
-    });
+// Ajustar tamaño en caso de redimensionar la ventana
+window.addEventListener('resize', () => {
+    sizes.width = window.innerWidth;
+    sizes.height = window.innerHeight;
+    camera.aspect = sizes.width / sizes.height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(window.devicePixelRatio);
 });
