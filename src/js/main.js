@@ -95,7 +95,7 @@ scene.add(controller);
             model.position.setFromMatrixPosition(reticle.matrix);
     
             scene.add(model);
-            model.animations=loadedModels[modelIndex].animations;
+            model.animations.push(loadedModels[modelIndex].animations[0]);
             console.log("modelo clonado:", model);
     
             // Asegurarnos de que el modelo clonado también tenga las animaciones
