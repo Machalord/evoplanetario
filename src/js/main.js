@@ -96,7 +96,7 @@ scene.add(controller);
     
             // Verificar si el modelo tiene animaciones
             if (loadedModels[0].animations.length > 0) {
-                let newMixer = new THREE.AnimationMixer(model);
+                let newMixer = new THREE.AnimationMixer(loadedModels[0]);
     
                 let firstAnimation = loadedModels[0].animations[0]; // Tomamos la primera animación disponible
                 let action = newMixer.clipAction(firstAnimation);
