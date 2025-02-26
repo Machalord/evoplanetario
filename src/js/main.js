@@ -89,21 +89,16 @@ function onSelect() {
         model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
         scene.add(model);
 
-        // Verificar si el modelo tiene animaciones
+        // Asegurarnos de que el modelo tiene animaciones
         if (loadedModels[randomIndex].animations && loadedModels[randomIndex].animations.length > 0) {
             let newMixer = new THREE.AnimationMixer(model);
+            let action = mixer.clipAction(model.animations[0]);
+            action.play();
             
-            // 🔹 Iteramos sobre todas las animaciones y reproducimos la primera
-            let firstAnimation = loadedModels[randomIndex].animations.find(anim => anim);
-            if (firstAnimation) {
-                let action = newMixer.clipAction(firstAnimation);
-                action.play();
-                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
-            } else {
-                console.warn("⚠️ No se encontró ninguna animación válida en el modelo.");
-            }
+            // 🔹 Agregamos el mixer a la lista para actualizarlo en el loop
+            mixers.push(newMixer);
         } else {
-            console.warn("⚠️ El modelo cargado no tiene animaciones.");
+            console.warn("⚠️ No hay animaciones disponibles para el modelo instanciado.");
         }
     }
 }
