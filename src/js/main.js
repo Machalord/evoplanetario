@@ -89,21 +89,26 @@ scene.add(controller);
     
             model.position.setFromMatrixPosition(reticle.matrix);
             //model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
-
-            model.animations=loadedModels[modelIndex].animations;
             scene.add(model);
     
-            // Verificar si el modelo tiene animaciones
-               let newMixer = new THREE.AnimationMixer(model);
+            // 🔹 Asegurarnos de que el modelo clonado también tenga las animaciones
+            model.animations = originalModel.animations;  
     
-                // 🔹 Tomamos la primera animación válida y la reproducimos
-                let firstAnimation = originalModel.animations[0];
+            // Verificar si el modelo tiene animaciones
+            if (model.animations && model.animations.length > 0) {
+                let newMixer = new THREE.AnimationMixer(model);
+    
+                let firstAnimation = model.animations[0]; // Tomamos la primera animación disponible
                 let action = newMixer.clipAction(firstAnimation);
                 action.play();
     
-                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop 
+                mixers.push(newMixer); // Guardamos el mixer para actualizarlo en el loop
+            } else {
+                console.warn("⚠️ El modelo cargado no tiene animaciones.");
+            }
         }
     }
+    
     
 
 
