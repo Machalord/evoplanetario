@@ -6,9 +6,10 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 let loadedModels = [];
 let hitTestSource = null;
 let hitTestSourceRequested = false;
-
+let mixer,clock;
+clock = new THREE.Clock();
 let gltfLoader = new GLTFLoader();
-gltfLoader.load('./assets/tute_ape.glb', onLoad); 
+gltfLoader.load('./assets/Australophitecus3_anim.glb', onLoad); 
 
   
 
@@ -125,13 +126,10 @@ function render(timestamp, frame) {
 
             }
         }
-    }
-    // console.log(scene.children)
-    scene.children.forEach(object => {
-        if (object.name === "model") {
-            object.rotation.y += 0.01
-        }
-    })
+
+        let mixerUpdateDelta = clock.getDelta();
+        mixer.update( mixerUpdateDelta);  
+    } 
     renderer.render(scene, camera)
 }
 
