@@ -9,7 +9,7 @@ let mixer;
 const clock = new THREE.Clock();
 
 const gltfLoader = new GLTFLoader();
-gltfLoader.load('./assets/cube.glb', (gltf) => {
+gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
     const ape = gltf.scene;
     //ape.scale.set(0.1, 0.1, 0.1); // Escalamos el modelo desde la carga
     loadedModels.push(ape);
@@ -60,7 +60,7 @@ function onSelect() {
         let randomIndex = Math.floor(Math.random() * loadedModels.length);
         let model = loadedModels[randomIndex].clone();
         model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(0.1, 0.1, 0.1);
+        //model.scale.set(0.1, 0.1, 0.1);
         scene.add(model);
 
         if (mixer) {
