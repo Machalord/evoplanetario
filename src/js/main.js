@@ -20,12 +20,9 @@ gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
         mixer = new THREE.AnimationMixer(ape);
         const idleAction = mixer.clipAction(gltf.animations[0]);
         idleAction.play();
+        
+        console.log("Animaciones disponibles:", loadedModels[randomIndex].animations);
 
-        const clips = gltf.animations;
-
-        clips.forEach( function ( clip ) {
-            mixer.clipAction( clip ).play();
-        } );
     }
 });
 
