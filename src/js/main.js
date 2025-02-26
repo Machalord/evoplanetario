@@ -2,116 +2,93 @@ import * as THREE from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
-
 let loadedModels = [];
 let hitTestSource = null;
 let hitTestSourceRequested = false;
-let mixer,clock;
-clock = new THREE.Clock();
-let gltfLoader = new GLTFLoader();
-gltfLoader.load('./assets/Australophitecus3_anim.glb', onLoad); 
+let mixer;
+const clock = new THREE.Clock();
 
-  
+const gltfLoader = new GLTFLoader();
+gltfLoader.load('./assets/cube.glb', (gltf) => {
+    const ape = gltf.scene;
+    ape.scale.set(0.1, 0.1, 0.1); // Escalamos el modelo desde la carga
+    loadedModels.push(ape);
 
-function onLoad(gtlf) {
-    loadedModels.push(gtlf.scene);
+    // Inicializar mezclador de animaciones
+    if (gltf.animations.length > 0) {
+        mixer = new THREE.AnimationMixer(ape);
+        const idleAction = mixer.clipAction(gltf.animations[0]);
+        idleAction.play();
+    }
+});
 
-    const ape=gltf.scene;
-        ape.animations=gltf.animations;
-
-        ape.traverse((child)=>{
-
-        }, undefined, function ( error ) {
-
-            console.error( error );
-
-        });
-
-
-        mixer = new THREE.AnimationMixer( ape ); 
-        const clips = ape.animations;
-
-        var idle= mixer.clipAction(ape.animations[0]).play();   
-        /* const clips = ape.animations;
-
-        clips.forEach( function ( clip ) {
-            mixer.clipAction( clip ).play();
-        } );    */
- 
-}
-
+// Escena y cámara
 const scene = new THREE.Scene();
-
-const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
-}
+const sizes = { width: window.innerWidth, height: window.innerHeight };
 
 const light = new THREE.AmbientLight(0xffffff, 1.0);
 scene.add(light);
 
-
-let reticle = new THREE.Mesh(
-    new THREE.RingGeometry(0.15, .2, 32).rotateX(-Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: 0xffffff * Math.random() })
-)
-reticle.visible = false;
-reticle.matrixAutoUpdate = false;
-scene.add(reticle);
-
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 1000);
-camera.position.set(0, 2, 5);
-camera.lookAt(new THREE.Vector3(0, 0, 0))
 scene.add(camera);
 
-const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true
-
-});
-
+// Renderizador
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.xr.enabled = true
+renderer.xr.enabled = true;
 
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(ARButton.createButton(renderer, { requiredFeatures: ['hit-test'] }));
 
+// Retícula
+let reticle = new THREE.Mesh(
+    new THREE.RingGeometry(0.15, 0.2, 32).rotateX(-Math.PI / 2),
+    new THREE.MeshStandardMaterial({ color: 0xffffff })
+);
+reticle.visible = false;
+reticle.matrixAutoUpdate = false;
+scene.add(reticle);
 
+// Controlador XR
 let controller = renderer.xr.getController(0);
 controller.addEventListener('select', onSelect);
 scene.add(controller);
 
 function onSelect() {
-    if (reticle.visible) {
-        let randomIndex = Math.floor((Math.random() * loadedModels.length))
-        let model = loadedModels[randomIndex].clone()
+    if (reticle.visible && loadedModels.length > 0) {
+        let randomIndex = Math.floor(Math.random() * loadedModels.length);
+        let model = loadedModels[randomIndex].clone();
         model.position.setFromMatrixPosition(reticle.matrix);
-        model.scale.set(.1, .1, .1)
-        model.name = "model"
+        model.scale.set(0.1, 0.1, 0.1);
         scene.add(model);
+
+        if (mixer) {
+            let newMixer = new THREE.AnimationMixer(model);
+            let action = newMixer.clipAction(model.animations[0]);
+            action.play();
+        }
     }
 }
 
-renderer.setAnimationLoop(render)
-
-function render(timestamp, frame) {
+renderer.setAnimationLoop((timestamp, frame) => {
     if (frame) {
         const referenceSpace = renderer.xr.getReferenceSpace();
         const session = renderer.xr.getSession();
 
-        if (hitTestSourceRequested === false) {
-            session.requestReferenceSpace('viewer').then(referenceSpace => {
-                session.requestHitTestSource({ space: referenceSpace }).then(source =>
-                    hitTestSource = source)
-            })
+        if (!hitTestSourceRequested) {
+            session.requestReferenceSpace('viewer').then(refSpace => {
+                session.requestHitTestSource({ space: refSpace }).then(source => {
+                    hitTestSource = source;
+                });
+            });
 
             hitTestSourceRequested = true;
 
             session.addEventListener("end", () => {
                 hitTestSourceRequested = false;
                 hitTestSource = null;
-            })
+            });
         }
 
         if (hitTestSource) {
@@ -119,28 +96,26 @@ function render(timestamp, frame) {
             if (hitTestResults.length > 0) {
                 const hit = hitTestResults[0];
                 reticle.visible = true;
-                reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix)
-
+                reticle.matrix.fromArray(hit.getPose(referenceSpace).transform.matrix);
             } else {
                 reticle.visible = false;
-
             }
         }
 
-        let mixerUpdateDelta = clock.getDelta();
-        mixer.update( mixerUpdateDelta);  
-    } 
-    renderer.render(scene, camera)
-}
+        // Solo actualizar el mixer si existe
+        if (mixer) {
+            mixer.update(clock.getDelta());
+        }
+    }
+    renderer.render(scene, camera);
+});
 
+// Ajustar tamaño en caso de redimensionar la ventana
 window.addEventListener('resize', () => {
     sizes.width = window.innerWidth;
     sizes.height = window.innerHeight;
-
     camera.aspect = sizes.width / sizes.height;
     camera.updateProjectionMatrix();
-
     renderer.setSize(sizes.width, sizes.height);
-    renderer.setPixelRatio(window.devicePixelRatio)
-
-})
+    renderer.setPixelRatio(window.devicePixelRatio);
+});
