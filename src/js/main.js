@@ -13,7 +13,7 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
     const ape = gltf.scene;
     //ape.scale.set(0.1, 0.1, 0.1); // Escalamos el modelo desde la carga
-    loadedModels.push(ape);
+    loadedModels.push(gltf);
 
     // Inicializar mezclador de animaciones
     if (gltf.animations.length > 0) {
@@ -25,6 +25,7 @@ gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
         mixers.push(mixer);
         
         console.log("Animaciones disponibles:", gltf.animations.length);
+        console.log("modelo clonado:", gltf);
 
         scene.add(ape)
 
