@@ -83,22 +83,22 @@ scene.add(controller);
 
     function onSelect() {
         if (reticle.visible && loadedModels.length > 0) {
-            let modelIndex = Math.floor(Math.random() * loadedModels.length);
+            let modelIndex = 0;
             let originalModel = loadedModels[modelIndex]; 
             let model = originalModel.clone();
-    
+            loadedModels[0]
             model.position.setFromMatrixPosition(reticle.matrix);
             //model.scale.set(1.2, 1.2, 1.2); // Escalar al tamaño de una persona
             scene.add(model);
     
             // 🔹 Asegurarnos de que el modelo clonado también tenga las animaciones
-            model.animations = originalModel.animations;  
+            model.animations = loadedModels[0].animations;  
     
             // Verificar si el modelo tiene animaciones
-            if (model.animations && model.animations.length > 0) {
+            if (loadedModels[0].animations && loadedModels[0].animations.length > 0) {
                 let newMixer = new THREE.AnimationMixer(model);
     
-                let firstAnimation = model.animations[0]; // Tomamos la primera animación disponible
+                let firstAnimation = loadedModels[0].animations[0]; // Tomamos la primera animación disponible
                 let action = newMixer.clipAction(firstAnimation);
                 action.play();
     
