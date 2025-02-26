@@ -21,7 +21,7 @@ gltfLoader.load('./assets/tute_ape1.glb', (gltf) => {
         const idleAction = mixer.clipAction(gltf.animations[0]);
         idleAction.play();
         
-        //console.log("Animaciones disponibles:", loadedModels[randomIndex].animations);
+        console.log("Animaciones disponibles:", gltf.animations.length);
 
     }
 });
@@ -95,7 +95,7 @@ scene.add(controller);
             model.animations = loadedModels[0].animations;  
     
             // Verificar si el modelo tiene animaciones
-            if (loadedModels[0].animations && loadedModels[0].animations.length > 0) {
+            if (loadedModels[0].animations.length > 0) {
                 let newMixer = new THREE.AnimationMixer(model);
     
                 let firstAnimation = loadedModels[0].animations[0]; // Tomamos la primera animación disponible
